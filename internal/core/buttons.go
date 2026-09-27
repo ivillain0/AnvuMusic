@@ -26,7 +26,7 @@ func AddMeMarkup(chatID int64) tg.ReplyMarkup {
 			tg.Button.URL(
 				F(chatID, "ADD_ME_BTN"),
 				"https://t.me/"+Bot.Me().Username+"?startgroup&admin=invite_users",
-			),
+			).Success(),
 		).
 		Build()
 }
@@ -34,7 +34,7 @@ func AddMeMarkup(chatID int64) tg.ReplyMarkup {
 func GetCancelKeyboard(chatID int64) *tg.ReplyInlineMarkup {
 	return tg.NewKeyboard().
 		AddRow(
-			tg.Button.Data(F(chatID, "DOWNLOAD_CANCEL_BTN"), "cancel"),
+			tg.Button.Data(F(chatID, "DOWNLOAD_CANCEL_BTN"), "cancel").Danger(),
 		).
 		Build()
 }
@@ -42,7 +42,7 @@ func GetCancelKeyboard(chatID int64) *tg.ReplyInlineMarkup {
 func GetBroadcastCancelKeyboard(chatID int64) *tg.ReplyInlineMarkup {
 	return tg.NewKeyboard().
 		AddRow(
-			tg.Button.Data(F(chatID, "BROADCAST_CANCEL_BTN"), "bcast_cancel"),
+			tg.Button.Data(F(chatID, "BROADCAST_CANCEL_BTN"), "bcast_cancel").Danger(),
 		).
 		Build()
 }
@@ -50,7 +50,7 @@ func GetBroadcastCancelKeyboard(chatID int64) *tg.ReplyInlineMarkup {
 func SuppMarkup(chatID int64) tg.ReplyMarkup {
 	return tg.NewKeyboard().
 		AddRow(
-			tg.Button.URL(F(chatID, "SUPPORT_BTN"), config.SupportChat),
+			tg.Button.URL(F(chatID, "SUPPORT_BTN"), config.SupportChat).Primary(),
 		).
 		Build()
 }
@@ -68,16 +68,16 @@ func GetStopConfirmMarkup(
 
 	if isPaused {
 		btn.AddRow(
-			tg.Button.Data(F(chatID, "CONFIRM_RESUME_BTN"), prefix+"resume"),
+			tg.Button.Data(F(chatID, "CONFIRM_RESUME_BTN"), prefix+"resume").Success(),
 		)
 	} else {
 		btn.AddRow(
-			tg.Button.Data(F(chatID, "CONFIRM_UNMUTE_BTN"), prefix+"unmute"),
+			tg.Button.Data(F(chatID, "CONFIRM_UNMUTE_BTN"), prefix+"unmute").Success(),
 		)
 	}
 
 	btn.AddRow(
-		tg.Button.Data(F(chatID, "CONFIRM_STOP_BTN"), prefix+"stop"),
+		tg.Button.Data(F(chatID, "CONFIRM_STOP_BTN"), prefix+"stop").Danger(),
 	)
 
 	return btn.Build()
@@ -110,23 +110,32 @@ func GetPlayMarkup(chatID int64, r *RoomState, queued bool) tg.ReplyMarkup {
 
 	// Row 1: Playback controls — Resume, Pause, Replay, Skip, Stop
 	btn.AddRow(
-		tg.Button.Data("▷", prefix+"resume"),
-		tg.Button.Data("II", prefix+"pause"),
-		tg.Button.Data("⟳", prefix+"replay"),
-		tg.Button.Data("‣‣I", prefix+"skip"),
-		tg.Button.Data("▢", prefix+"stop"),
+		tg.Button.Data("▷", prefix+"resume").Success(),
+		tg.Button.Data("II", prefix+"pause").Danger(),
+		tg.Button.Data("⟳", prefix+"replay").Primary(),
+		tg.Button.Data("‣‣I", prefix+"skip").Primary(),
+		tg.Button.Data("▢", prefix+"stop").Danger(),
 	)
 
 	// Row 2: Seek back, Settings (⚙️), Seek forward
 	btn.AddRow(
-		tg.Button.Data("↩ 15s", prefix+"seekback_15"),
-		tg.Button.Data("⚙️", prefix+"settings"),
-		tg.Button.Data("15s ↪", prefix+"seek_15"),
+		tg.Button.Data("↩ 15s", prefix+"seekback_15").Primary(),
+		tg.Button.Data("Pl+", prefix+"playlist").Primary(),
+		tg.Button.Data("15s ↪", prefix+"seek_15").Primary(),
 	)
 
-	// Row 3: Close only
+	// Row 3: Autoplay toggle
+	autoplayBtn := F(chatID, "AUTOPLAY_BTN_OFF")
+	if r.Autoplay() {
+		autoplayBtn = F(chatID, "AUTOPLAY_BTN_ON")
+	}
 	btn.AddRow(
-		tg.Button.Data(F(chatID, "CLOSE_BTN"), "close"),
+		tg.Button.Data(autoplayBtn, prefix+"autoplay").Primary(),
+	)
+
+	// Row 4: Close only
+	btn.AddRow(
+		tg.Button.Data(F(chatID, "CLOSE_BTN"), "close").Danger(),
 	)
 
 	return btn.Build()
@@ -148,12 +157,12 @@ func GetPlaybackSettingsMarkup(chatID int64, r *RoomState) tg.ReplyMarkup {
 		autoplayBtn = F(chatID, "AUTOPLAY_BTN_ON")
 	}
 	btn.AddRow(
-		tg.Button.Data(autoplayBtn, prefix+"autoplay"),
-		tg.Button.Data(F(chatID, "ADD_TO_PLAYLIST_BTN"), prefix+"playlist"),
+		tg.Button.Data(autoplayBtn, prefix+"autoplay").Primary(),
+		tg.Button.Data(F(chatID, "ADD_TO_PLAYLIST_BTN"), prefix+"playlist").Primary(),
 	)
 
 	btn.AddRow(
-		tg.Button.Data(F(chatID, "PLAYBACK_BACK_BTN"), prefix+"back"),
+		tg.Button.Data(F(chatID, "PLAYBACK_BACK_BTN"), prefix+"back").Primary(),
 	)
 
 	return btn.Build()
@@ -168,14 +177,14 @@ func GetPlaylistPickerMarkup(
 	kb := tg.NewKeyboard()
 
 	if len(playlists) == 0 {
-		kb.AddRow(tg.Button.Data(F(chatID, "PLAYLIST_CREATE_SAVE_BTN"), "plist:create"))
+		kb.AddRow(tg.Button.Data(F(chatID, "PLAYLIST_CREATE_SAVE_BTN"), "plist:create").Success())
 	} else {
 		for _, pl := range playlists {
-			kb.AddRow(tg.Button.Data(pl.Name, "plist:"+pl.ID))
+			kb.AddRow(tg.Button.Data(pl.Name, "plist:"+pl.ID).Primary())
 		}
 	}
 
-	kb.AddRow(tg.Button.Data(F(chatID, "CLOSE_BTN"), "close"))
+	kb.AddRow(tg.Button.Data(F(chatID, "CLOSE_BTN"), "close").Danger())
 
 	return kb.Build()
 }
@@ -193,21 +202,21 @@ func GetSettingsMarkup(
 	if playMode {
 		playBtn = F(chatID, "SETTINGS_PLAY_ADMINS_BTN")
 	}
-	kb.AddRow(tg.Button.Data(playBtn, "settings:play"))
+	kb.AddRow(tg.Button.Data(playBtn, "settings:play").Primary())
 
 	adminBtn := F(chatID, "SETTINGS_ADMIN_ADMINS_BTN")
 	if adminMode == "everyone" {
 		adminBtn = F(chatID, "SETTINGS_ADMIN_EVERYONE_BTN")
 	}
-	kb.AddRow(tg.Button.Data(adminBtn, "settings:admin"))
+	kb.AddRow(tg.Button.Data(adminBtn, "settings:admin").Primary())
 
 	deleteBtn := F(chatID, "SETTINGS_DELETE_OFF_BTN")
 	if cmdDelete {
 		deleteBtn = F(chatID, "SETTINGS_DELETE_ON_BTN")
 	}
-	kb.AddRow(tg.Button.Data(deleteBtn, "settings:delete"))
+	kb.AddRow(tg.Button.Data(deleteBtn, "settings:delete").Primary())
 
-	kb.AddRow(tg.Button.Data(F(chatID, "CLOSE_BTN"), "close"))
+	kb.AddRow(tg.Button.Data(F(chatID, "CLOSE_BTN"), "close").Danger())
 
 	return kb.Build()
 }
@@ -216,8 +225,8 @@ func GetGroupHelpKeyboard(chatID int64) *tg.ReplyInlineMarkup {
 	bot := "https://t.me/" + Bot.Me().Username
 	return tg.NewKeyboard().
 		AddRow(
-			tg.Button.URL(F(chatID, "GC_HELP_BTN"), bot+"?start=pm_help"),
-			tg.Button.URL(F(chatID, "GC_UPDATES_BTN"), config.SupportChannel),
+			tg.Button.URL(F(chatID, "GC_HELP_BTN"), bot+"?start=pm_help").Primary(),
+			tg.Button.URL(F(chatID, "GC_UPDATES_BTN"), config.SupportChannel).Primary(),
 		).
 		Build()
 }
@@ -228,18 +237,18 @@ func GetStartMarkup(chatID int64) tg.ReplyMarkup {
 
 	// Row 1: Add to group
 	kb.AddRow(
-		tg.Button.URL(F(chatID, "ADD_ME_BTN"), bot+"?startgroup&admin=invite_users"),
+		tg.Button.URL(F(chatID, "ADD_ME_BTN"), bot+"?startgroup&admin=invite_users").Success(),
 	)
 
 	// Row 2: Support (opens support panel), Language
 	kb.AddRow(
-		tg.Button.Data(F(chatID, "SUPPORT_BTN"), "support_panel"),
-		tg.Button.Data(F(chatID, "LANGUAGE_BTN"), "lang"),
+		tg.Button.Data(F(chatID, "SUPPORT_BTN"), "support_panel").Primary(),
+		tg.Button.Data(F(chatID, "LANGUAGE_BTN"), "lang").Primary(),
 	)
 
 	// Row 3: Help
 	kb.AddRow(
-		tg.Button.Data(F(chatID, "HELP_BTN"), "help_cb"),
+		tg.Button.Data(F(chatID, "HELP_BTN"), "help_cb").Primary(),
 	)
 
 	return kb.Build()
@@ -250,26 +259,26 @@ func GetSupportMarkup(chatID int64) tg.ReplyMarkup {
 
 	// Row 1 (2×2 grid row 1): Support Group, Updates Channel
 	kb.AddRow(
-		tg.Button.URL(F(chatID, "SUPPORT_BTN"), config.SupportChat),
-		tg.Button.URL(F(chatID, "UPDATES_BTN"), config.SupportChannel),
+		tg.Button.URL(F(chatID, "SUPPORT_BTN"), config.SupportChat).Primary(),
+		tg.Button.URL(F(chatID, "UPDATES_BTN"), config.SupportChannel).Primary(),
 	)
 
 	// Row 2 (2×2 grid row 2): Owner, Source
 	if config.OwnerID != 0 {
 		kb.AddRow(
-			tg.Button.URL(F(chatID, "OWNER_BTN"), "tg://user?id="+utils.IntToStr(config.OwnerID)),
-			tg.Button.URL(F(chatID, "SOURCE_BTN"), "https://t.me/lelobhaisource"),
+			tg.Button.URL(F(chatID, "OWNER_BTN"), "tg://user?id="+utils.IntToStr(config.OwnerID)).Primary(),
+			tg.Button.URL(F(chatID, "SOURCE_BTN"), "https://t.me/lelobhaisource").Primary(),
 		)
 	} else {
 		kb.AddRow(
-			tg.Button.URL(F(chatID, "SOURCE_BTN"), "https://t.me/lelobhaisource"),
+			tg.Button.URL(F(chatID, "SOURCE_BTN"), "https://t.me/lelobhaisource").Primary(),
 		)
 	}
 
 	// Row 3: Back to home & Close
 	kb.AddRow(
-		tg.Button.Data(F(chatID, "HELP_HOME_PANEL_BTN"), "start"),
-		tg.Button.Data(F(chatID, "CLOSE_BTN"), "close"),
+		tg.Button.Data(F(chatID, "HELP_HOME_PANEL_BTN"), "start").Primary(),
+		tg.Button.Data(F(chatID, "CLOSE_BTN"), "close").Danger(),
 	)
 
 	return kb.Build()
@@ -281,27 +290,27 @@ func GetHelpKeyboard(chatID int64) *tg.ReplyInlineMarkup {
 			tg.Button.Data(
 				F(chatID, "HELP_PUBLIC_BTN"),
 				"help:public",
-			),
+			).Primary(),
 			tg.Button.Data(
 				F(chatID, "HELP_ADMINS_BTN"),
 				"help:admins",
-			),
+			).Primary(),
 		).
 		AddRow(
 			tg.Button.Data(
 				F(chatID, "HELP_OWNER_BTN"),
 				"help:owner",
-			),
+			).Primary(),
 			tg.Button.Data(
 				F(chatID, "HELP_SUDOERS_BTN"),
 				"help:sudoers",
-			),
+			).Primary(),
 		).
 		AddRow(
 			tg.Button.Data(
 				F(chatID, "HELP_HOME_PANEL_BTN"),
 				"start",
-			),
+			).Primary(),
 		).
 		Build()
 }
@@ -312,11 +321,11 @@ func GetBackKeyboard(chatID int64) *tg.ReplyInlineMarkup {
 			tg.Button.Data(
 				F(chatID, "HELP_BACK_CATEGORIES_BTN"),
 				"help:main",
-			),
+			).Primary(),
 			tg.Button.Data(
 				F(chatID, "HELP_HOME_PANEL_BTN"),
 				"start",
-			),
+			).Primary(),
 		).
 		Build()
 }
