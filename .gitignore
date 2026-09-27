@@ -20,3 +20,19 @@ tmp/
 x
 index.html
 *.txt
+
+# Python
+__pycache__/
+*.pyc
+
+# Secrets / runtime data
+internal/cookies/cookies.txt
+.env
+.env.*
+!.env.example
+*.session
+*.session-journal
+logs.txt
+
+# Scratch
+test_api.py
