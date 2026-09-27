@@ -15,6 +15,7 @@ import (
 
 	"main/internal/config"
 	"main/internal/core"
+	state "main/internal/core/models"
 	"main/internal/locales"
 	"main/internal/platforms"
 	"main/internal/utils"
@@ -63,17 +64,20 @@ func handleSkip(m *telegram.NewMessage, cplay bool) error {
 
 	mention := utils.MentionHTML(m.Sender)
 
-	if len(r.Queue()) == 0 {
-		cleanupRoomMessages(r)
-		core.DeleteRoom(r.ChatID())
-		m.Reply(F(chatID, "skip_stopped", locales.Arg{
-			"user": mention,
-		}))
-		return telegram.ErrEndGroup
-	}
-
-	r.SetLoop(0)
-	t := r.NextTrack()
+var t *state.Track
+if len(r.Queue()) == 0 {
+if t = autoplayNextTrack(r); t == nil {
+cleanupRoomMessages(r)
+core.DeleteRoom(r.ChatID())
+m.Reply(F(chatID, "skip_stopped", locales.Arg{
+"user": mention,
+}))
+return telegram.ErrEndGroup
+}
+} else {
+r.SetLoop(0)
+t = r.NextTrack()
+}
 
 	statusMsg, err := core.Bot.SendMessage(
 		chatID,

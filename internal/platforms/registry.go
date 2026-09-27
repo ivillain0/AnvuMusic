@@ -321,7 +321,7 @@ func downloadYouTubeTrack(
 	var errs []string
 
 	for _, p := range GetOrderedPlatforms() {
-		if p.Name() != PlatformShrutiApi && p.Name() != PlatformYtDlp {
+		if p.Name() != PlatformCustomApi && p.Name() != PlatformYtDlp {
 			continue
 		}
 		if !p.CanDownload(track.Source) {

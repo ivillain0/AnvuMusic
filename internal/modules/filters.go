@@ -17,13 +17,13 @@ import (
 )
 
 var (
-	superGroupFilter    = tg.Custom(filterSuperGroup)
-	adminFilter         = tg.Custom(filterChatAdmins)
-	authFilter          = tg.Custom(filterAuthUsers)
-	playModeFilter      = tg.Custom(filterPlayMode)
-	ignoreChannelFilter = tg.Custom(filterChannel)
-	sudoOnlyFilter      = tg.Custom(filterSudo)
-	ownerFilter         = tg.Custom(filterOwner)
+	superGroupFilter    = tg.CustomFilter(filterSuperGroup)
+	adminFilter         = tg.CustomFilter(filterChatAdmins)
+	authFilter          = tg.CustomFilter(filterAuthUsers)
+	playModeFilter      = tg.CustomFilter(filterPlayMode)
+	ignoreChannelFilter = tg.CustomFilter(filterChannel)
+	sudoOnlyFilter      = tg.CustomFilter(filterSudo)
+	ownerFilter         = tg.CustomFilter(filterOwner)
 )
 
 func filterSuperGroup(m *tg.NewMessage) bool {
